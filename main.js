@@ -1,4 +1,4 @@
-// SillyTavern Truth or Dare Extension - Final Robust Version for Staging UI
+// SillyTavern Truth or Dare Extension - HEAVY DEBUGGING Version
 // File: main.js
 
 class TruthOrDareExtension {
@@ -9,31 +9,34 @@ class TruthOrDareExtension {
     #dares = [];
 
     constructor() {
+        console.log('Truth or Dare: 1. Constructor has been called.');
         this.startGame = this.startGame.bind(this);
         this.stopGame = this.stopGame.bind(this);
         this.selectTruth = this.selectTruth.bind(this);
         this.selectDare = this.selectDare.bind(this);
     }
 
-    // ... (#loadGameData is the same) ...
     async #loadGameData() {
+        console.log('Truth or Dare: 4. Attempting to load game data...');
         try {
-            const truthsResponse = await fetch('/truths.json');
-            if (!truthsResponse.ok) { throw new Error('Failed to load truths.json'); }
+            const truthsResponse = await fetch('./truths.json');
+            if (!truthsResponse.ok) { throw new Error(`Failed to load truths.json. Status: ${truthsResponse.status}`); }
             this.#truths = await truthsResponse.json();
+            console.log('Truth or Dare: 5. truths.json loaded successfully.');
 
-            const daresResponse = await fetch('/dares.json');
-            if (!daresResponse.ok) { throw new Error('Failed to load dares.json'); }
+            const daresResponse = await fetch('./dares.json');
+            if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); }
             this.#dares = await daresResponse.json();
+            console.log('Truth or Dare: 6. dares.json loaded successfully.');
 
-            console.log('Truth or Dare: Game data loaded successfully.');
         } catch (error) {
-            console.error('Truth or Dare: Error loading game data:', error);
-            alert('Failed to load Truth or Dare game data. Please check the console for errors.');
+            console.error('Truth or Dare: CRITICAL ERROR during loadGameData.', error);
+            alert('Truth or Dare: CRITICAL ERROR loading game data. Check the F12 Developer Console.');
         }
     }
 
     #createUI() {
+        console.log('Truth or Dare: 9. createUI function has been called.');
         const gameControls = document.createElement('div');
         gameControls.id = 'truth-or-dare-controls';
         gameControls.style.margin = '10px';
@@ -41,38 +44,24 @@ class TruthOrDareExtension {
         gameControls.style.border = '1px solid var(--border-color)';
         gameControls.style.borderRadius = 'var(--border-radius-big)';
 
-        gameControls.innerHTML = `
-            <h4>Truth or Dare</h4>
-            <div id="tod-buttons">
-                <button id="tod-start-btn" class="silly-button">Start Game</button>
-                <button id="tod-stop-btn" class="silly-button" style="display: none;">Stop Game</button>
-                <div id="tod-game-options" style="display: none; margin-top: 5px;">
-                    <button id="tod-truth-btn" class="silly-button">Truth</button>
-                    <button id="tod-dare-btn" class="silly-button">Dare</button>
-                </div>
-            </div>
-            <div id="tod-status" style="margin-top: 10px; font-style: italic;"></div>
-        `;
+        gameControls.innerHTML = `<h4>Truth or Dare</h4><div id="tod-buttons"><button id="tod-start-btn" class="silly-button">Start Game</button><button id="tod-stop-btn" class="silly-button" style="display: none;">Stop Game</button><div id="tod-game-options" style="display: none; margin-top: 5px;"><button id="tod-truth-btn" class="silly-button">Truth</button><button id="tod-dare-btn" class="silly-button">Dare</button></div></div><div id="tod-status" style="margin-top: 10px; font-style: italic;"></div>`;
         
         try {
-            // This is the updated, more robust part
             const chatForm = document.querySelector('#chat_form');
             if (chatForm) {
                 chatForm.append(gameControls);
-                console.log('Truth or Dare: UI successfully attached to #chat_form.');
+                console.log('Truth or Dare: 10. SUCCESS! UI attached to #chat_form.');
             } else {
-                // If it still can't be found, log a clear error.
-                console.error('Truth or Dare: Could not find the #chat_form element to attach the UI.');
-                return; // Stop execution if UI can't be placed.
+                console.error('Truth or Dare: FATAL! Could not find the #chat_form element.');
+                return;
             }
 
-            // Attach event listeners only if the UI was successfully created.
             document.getElementById('tod-start-btn').addEventListener('click', this.startGame);
             document.getElementById('tod-stop-btn').addEventListener('click', this.stopGame);
             document.getElementById('tod-truth-btn').addEventListener('click', this.selectTruth);
             document.getElementById('tod-dare-btn').addEventListener('click', this.selectDare);
         } catch (error) {
-            console.error('Truth or Dare: An error occurred during UI creation.', error);
+            console.error('Truth or Dare: CRITICAL ERROR during UI creation.', error);
         }
     }
 
@@ -89,23 +78,24 @@ class TruthOrDareExtension {
     #sendSystemMessage(message) { const chatInput = document.getElementById('send_textarea'); const sendButton = document.getElementById('send_but'); if (chatInput && sendButton) { const originalValue = chatInput.value; chatInput.value = `/sys ${message}`; sendButton.click(); chatInput.value = originalValue; } else { console.error('Truth or Dare: Could not find chat input or send button.'); } }
 
     onLoad() {
-        // We will wait for the data to load first
+        console.log('Truth or Dare: 3. onLoad function has been called.');
         this.#loadGameData().then(() => {
-            // **THIS IS THE NEW PATIENT LOGIC**
-            // We will repeatedly check for the UI element every 100ms
+            console.log('Truth or Dare: 7. Game data promise resolved. Starting UI wait loop.');
             const interval = setInterval(() => {
                 const chatForm = document.querySelector('#chat_form');
                 if (chatForm) {
-                    clearInterval(interval); // Stop checking once we find it
-                    this.#createUI(); // Create the UI
+                    console.log('Truth or Dare: 8. Found #chat_form. Clearing interval and creating UI.');
+                    clearInterval(interval);
+                    this.#createUI();
                 }
-            }, 100); // Check every 100 milliseconds
+            }, 100);
         });
     }
 }
 
+console.log('Truth or Dare: 0. main.js script is being executed.');
 (function() {
-    // No need for a timeout here anymore, the class handles it.
     const truthOrDare = new TruthOrDareExtension();
     truthOrDare.onLoad();
+    console.log('Truth or Dare: 2. Initial execution block has finished.');
 })();
