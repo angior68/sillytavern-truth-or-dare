@@ -1,7 +1,7 @@
 {
-  "name": "Truth or Dare Game",
-  "author": "Andrea Giorgioni",
-  "version": "1.1.0",
+  "display_name": "Truth or Dare Game",
+  "author": "angior68",
+  "version": "0.1.0",
   "description": "Adds a simple Truth or Dare game to SillyTavern. Start the game and take turns with the character choosing truths or dares from a customizable list.",
-  "entry": "main.js"
+  "js": "main.js"
 }
