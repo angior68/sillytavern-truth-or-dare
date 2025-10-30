@@ -1,6 +1,6 @@
 // SillyTavern Truth or Dare Extension - Advanced AI Turn
 // File: main.js
-// CORRECTED FOR /scripts/extensions/ FOLDER STRUCTURE
+
 
 // This class encapsulates the entire functionality of the Truth or Dare extension.
 class TruthOrDareExtension {
@@ -26,7 +26,7 @@ class TruthOrDareExtension {
         try {
             // Fetch the content of truths.json.
             // THIS PATH HAS BEEN UPDATED
-            const truthsResponse = await fetch('/scripts/extensions/truth-or-dare/truths.json');
+            const truthsResponse = await fetch('/truths.json');
             if (!truthsResponse.ok) {
                 throw new Error('Failed to load truths.json');
             }
@@ -34,7 +34,7 @@ class TruthOrDareExtension {
 
             // Fetch the content of dares.json.
             // THIS PATH HAS BEEN UPDATED
-            const daresResponse = await fetch('/scripts/extensions/truth-or-dare/dares.json');
+            const daresResponse = await fetch('/dares.json');
             if (!daresResponse.ok) {
                 throw new Error('Failed to load dares.json');
             }
