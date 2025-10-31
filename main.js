@@ -1,4 +1,4 @@
-// SillyTavern Truth or Dare Extension - Final Working Version
+// SillyTavern Truth or Dare Extension - Final Direct Input Version
 // File: main.js
 
 class TruthOrDareExtension {
@@ -45,7 +45,6 @@ class TruthOrDareExtension {
         document.getElementById('tod-stop-btn').addEventListener('click', this.stopGame);
         document.getElementById('tod-truth-btn').addEventListener('click', this.selectTruth);
         document.getElementById('tod-dare-btn').addEventListener('click', this.selectDare);
-        console.log('Truth or Dare: [SUCCESS] UI created and attached.');
     }
 
     // *** THIS IS THE ONLY FUNCTION THAT HAS CHANGED ***
@@ -56,23 +55,24 @@ class TruthOrDareExtension {
             return;
         }
 
-        // Find the parent form of the text area. This is the robust method.
-        const chatForm = chatInput.closest('form');
-        if (!chatForm) {
-            console.error('Truth or Dare: Could not find parent form of the chat input.');
-            return;
-        }
-
         const originalValue = chatInput.value;
         chatInput.value = `/sys ${message}`;
 
-        // Create and dispatch a "submit" event on the form itself.
-        // This is much more reliable than trying to .click() a div.
-        const submitEvent = new SubmitEvent('submit', { bubbles: true, cancelable: true });
-        chatForm.dispatchEvent(submitEvent);
+        // Create a keyboard event to simulate pressing "Enter"
+        // This is the most reliable method for modern web apps.
+        const enterEvent = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true,
+        });
 
-        // Restore the original input value shortly after, allowing the submit to process.
-        setTimeout(() => { chatInput.value = originalValue; }, 10);
+        // Dispatch the event directly on the text input element
+        chatInput.dispatchEvent(enterEvent);
+
+        // Restore the original input value shortly after
+        setTimeout(() => { chatInput.value = originalValue; }, 50);
     }
 
     // All other functions are the same as the previous working version
@@ -82,7 +82,7 @@ class TruthOrDareExtension {
     selectDare() { if (!this.#isActive || this.#playerTurn !== 'user') return; const randomDare = this.#getRandomItem(this.#dares); if (randomDare) { this.#sendSystemMessage(`You chose Dare: ${randomDare}`); this.#endTurn(); } }
     #endTurn() { this.#playerTurn = (this.#playerTurn === 'user') ? 'character' : 'user'; this.#updateUIForTurn(); if (this.#playerTurn === 'character') { this.#handleCharacterTurn(); } }
     #handleCharacterTurn() { setTimeout(() => { const choice = Math.random() < 0.5 ? 'Truth' : 'Dare'; if (choice === 'Truth') { const randomTruth = this.#getRandomItem(this.#truths); if (randomTruth) { this.#sendSystemMessage(`The character chose Truth.`); setTimeout(() => this.#promptCharacter(`Truth for you: ${randomTruth}`), 1500); } } else { const randomDare = this.#getRandomItem(this.#dares); if (randomDare) { this.#sendSystemMessage(`The character chose Dare.`); setTimeout(() => this.#promptCharacter(`Dare for you: ${randomDare}`), 1500); } } setTimeout(() => this.#endTurn(), 4000); }, 2000); }
-    #promptCharacter(prompt) { this.#sendSystemMessage(`*The character is asked:* "${prompt}" *They think for a moment and then respond.*`); } // Simplified to use the main send function
+    #promptCharacter(prompt) { this.#sendSystemMessage(`*The character is asked:* "${prompt}" *They think for a moment and then respond.*`); }
     #updateUIForTurn() { const gameOptions = document.getElementById('tod-game-options'); const statusDisplay = document.getElementById('tod-status'); if (this.#playerTurn === 'user') { gameOptions.style.display = 'block'; statusDisplay.textContent = "It's your turn. Choose Truth or Dare."; } else { gameOptions.style.display = 'none'; statusDisplay.textContent = "It's the character's turn..."; } }
     #getRandomItem(array) { if (!array || array.length === 0) return null; const randomIndex = Math.floor(Math.random() * array.length); return array[randomIndex]; }
 
