@@ -1,4 +1,4 @@
-// SillyTavern Truth or Dare Extension - Final Robust UI Version
+// SillyTavern Truth or Dare Extension - Final Anchor Point Version
 // File: main.js
 
 class TruthOrDareExtension {
@@ -24,7 +24,6 @@ class TruthOrDareExtension {
             if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); }
             this.#dares = await daresResponse.json();
             
-            console.log('Truth or Dare: [SUCCESS] Game data loaded.');
             return true; // Indicate success
         } catch (error) {
             console.error('Truth or Dare: [FATAL] Could not load game data.', error);
@@ -33,10 +32,9 @@ class TruthOrDareExtension {
         }
     }
 
-    #createUI(targetElement) {
-        console.log('Truth or Dare: [INFO] createUI function called.');
-        if (!targetElement) {
-            console.error('Truth or Dare: [FATAL] createUI was called with an invalid target element.');
+    #createUI(anchorElement) {
+        if (!anchorElement || !anchorElement.parentElement) {
+            console.error('Truth or Dare: [FATAL] createUI was called with an invalid anchor element.');
             return;
         }
 
@@ -46,17 +44,19 @@ class TruthOrDareExtension {
         gameControls.style.padding = '10px';
         gameControls.style.border = '1px solid var(--border-color)';
         gameControls.style.borderRadius = 'var(--border-radius-big)';
-        gameControls.style.display = 'block'; // Force it to be visible
+        gameControls.style.display = 'block';
 
         gameControls.innerHTML = `<h4>Truth or Dare</h4><div id="tod-buttons"><button id="tod-start-btn" class="silly-button">Start Game</button><button id="tod-stop-btn" class="silly-button" style="display: none;">Stop Game</button><div id="tod-game-options" style="display: none; margin-top: 5px;"><button id="tod-truth-btn" class="silly-button">Truth</button><button id="tod-dare-btn" class="silly-button">Dare</button></div></div><div id="tod-status" style="margin-top: 10px; font-style: italic;"></div>`;
         
         try {
-            targetElement.append(gameControls);
+            // *** THE NEW LOGIC: Insert BEFORE the text area ***
+            anchorElement.parentElement.insertBefore(gameControls, anchorElement);
+            
             document.getElementById('tod-start-btn').addEventListener('click', this.startGame);
             document.getElementById('tod-stop-btn').addEventListener('click', this.stopGame);
             document.getElementById('tod-truth-btn').addEventListener('click', this.selectTruth);
             document.getElementById('tod-dare-btn').addEventListener('click', this.selectDare);
-            console.log('Truth or Dare: [SUCCESS] UI created and attached.');
+            console.log('Truth or Dare: [SUCCESS] UI created and attached before #send_textarea.');
         } catch (error) {
             console.error('Truth or Dare: [FATAL] An error occurred while attaching the UI.', error);
         }
@@ -81,23 +81,23 @@ class TruthOrDareExtension {
                 return;
             }
 
-            // More robust UI waiting logic
             let attempts = 0;
-            const maxAttempts = 100; // Wait for a maximum of 10 seconds
+            const maxAttempts = 100;
             const interval = setInterval(() => {
                 attempts++;
-                const chatForm = document.querySelector('#chat_form');
+                // *** THE NEW TARGET: We are looking for the text area itself ***
+                const anchorElement = document.getElementById('send_textarea');
                 
-                if (chatForm) {
-                    console.log(`Truth or Dare: [INFO] Found #chat_form after ${attempts} attempts.`);
+                if (anchorElement) {
+                    console.log(`Truth or Dare: [INFO] Found anchor #send_textarea after ${attempts} attempts.`);
                     clearInterval(interval);
-                    this.#createUI(chatForm);
+                    this.#createUI(anchorElement);
                 } else if (attempts > maxAttempts) {
                     clearInterval(interval);
-                    console.error("Truth or Dare: [FATAL] Timed out waiting for #chat_form to appear. Extension will not load.");
-                    alert("Truth or Dare extension could not find the chat input form. It may be incompatible with this version of SillyTavern.");
+                    console.error("Truth or Dare: [FATAL] Timed out waiting for #send_textarea to appear.");
+                    alert("Truth or Dare extension could not find the chat input box.");
                 }
-            }, 100); // Check every 100 milliseconds
+            }, 100);
         });
     }
 }
