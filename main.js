@@ -19,12 +19,12 @@ class TruthOrDareExtension {
     async #loadGameData() {
         console.log('Truth or Dare: 4. Attempting to load game data...');
         try {
-            const truthsResponse = await fetch('\data\default-user\extensions\sillytavern-truth-or-dare');
+            const truthsResponse = await fetch('\extensions\sillytavern-truth-or-dare\truths.json');
             if (!truthsResponse.ok) { throw new Error(`Failed to load truths.json. Status: ${truthsResponse.status}`); }
             this.#truths = await truthsResponse.json();
             console.log('Truth or Dare: 5. truths.json loaded successfully.');
 
-            const daresResponse = await fetch('\data\default-user\extensions\sillytavern-truth-or-dare');
+            const daresResponse = await fetch('\extensions\sillytavern-truth-or-dare\dares.json');
             if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); }
             this.#dares = await daresResponse.json();
             console.log('Truth or Dare: 6. dares.json loaded successfully.');
