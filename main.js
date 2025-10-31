@@ -1,51 +1,12 @@
-// SillyTavern Truth or Dare Extension - Final Framework-Aware Version
+// SillyTavern Truth or Dare Extension - Final Hail Mary Version
 // File: main.js
 
 class TruthOrDareExtension {
-    #isActive = false;
-    #playerTurn = 'user';
-    #truths = [];
-    #dares = [];
-
-    constructor() {
-        this.startGame = this.startGame.bind(this);
-        this.stopGame = this.stopGame.bind(this);
-        this.selectTruth = this.selectTruth.bind(this);
-        this.selectDare = this.selectDare.bind(this);
-    }
-
-    async #loadGameData() {
-        try {
-            const truthsResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/truths.json');
-            if (!truthsResponse.ok) { throw new Error(`Failed to load truths.json. Status: ${truthsResponse.status}`); }
-            this.#truths = await truthsResponse.json();
-
-            const daresResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/dares.json');
-            if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); }
-            this.#dares = await daresResponse.json();
-            return true;
-        } catch (error) {
-            console.error('Truth or Dare: [FATAL] Could not load game data.', error);
-            return false;
-        }
-    }
-
-    #createUI(anchorElement) {
-        const gameControls = document.createElement('div');
-        gameControls.id = 'truth-or-dare-controls';
-        gameControls.style.margin = '10px';
-        gameControls.style.padding = '10px';
-        gameControls.style.border = '1px solid var(--border-color)';
-        gameControls.style.borderRadius = 'var(--border-radius-big)';
-
-        gameControls.innerHTML = `<h4>Truth or Dare</h4><div id="tod-buttons"><button id="tod-start-btn" class="silly-button">Start Game</button><button id="tod-stop-btn" class="silly-button" style="display: none;">Stop Game</button><div id="tod-game-options" style="display: none; margin-top: 5px;"><button id="tod-truth-btn" class="silly-button">Truth</button><button id="tod-dare-btn" class="silly-button">Dare</button></div></div><div id="tod-status" style="margin-top: 10px; font-style: italic;"></div>`;
-        
-        anchorElement.parentElement.insertBefore(gameControls, anchorElement);
-        document.getElementById('tod-start-btn').addEventListener('click', this.startGame);
-        document.getElementById('tod-stop-btn').addEventListener('click', this.stopGame);
-        document.getElementById('tod-truth-btn').addEventListener('click', this.selectTruth);
-        document.getElementById('tod-dare-btn').addEventListener('click', this.selectDare);
-    }
+    // ... (constructor and all other functions are identical to the last version) ...
+    #isActive = false; #playerTurn = 'user'; #truths = []; #dares = [];
+    constructor() { this.startGame = this.startGame.bind(this); this.stopGame = this.stopGame.bind(this); this.selectTruth = this.selectTruth.bind(this); this.selectDare = this.selectDare.bind(this); }
+    async #loadGameData() { try { const truthsResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/truths.json'); if (!truthsResponse.ok) { throw new Error(`Failed to load truths.json. Status: ${truthsResponse.status}`); } this.#truths = await truthsResponse.json(); const daresResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/dares.json'); if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); } this.#dares = await daresResponse.json(); return true; } catch (error) { console.error('Truth or Dare: [FATAL] Could not load game data.', error); return false; } }
+    #createUI(anchorElement) { const gameControls = document.createElement('div'); gameControls.id = 'truth-or-dare-controls'; gameControls.style.margin = '10px'; gameControls.style.padding = '10px'; gameControls.style.border = '1px solid var(--border-color)'; gameControls.style.borderRadius = 'var(--border-radius-big)'; gameControls.innerHTML = `<h4>Truth or Dare</h4><div id="tod-buttons"><button id="tod-start-btn" class="silly-button">Start Game</button><button id="tod-stop-btn" class="silly-button" style="display: none;">Stop Game</button><div id="tod-game-options" style="display: none; margin-top: 5px;"><button id="tod-truth-btn" class="silly-button">Truth</button><button id="tod-dare-btn" class="silly-button">Dare</button></div></div><div id="tod-status" style="margin-top: 10px; font-style: italic;"></div>`; anchorElement.parentElement.insertBefore(gameControls, anchorElement); document.getElementById('tod-start-btn').addEventListener('click', this.startGame); document.getElementById('tod-stop-btn').addEventListener('click', this.stopGame); document.getElementById('tod-truth-btn').addEventListener('click', this.selectTruth); document.getElementById('tod-dare-btn').addEventListener('click', this.selectDare); }
 
     // *** THIS IS THE ONLY FUNCTION THAT HAS CHANGED ***
     #sendSystemMessage(message) {
@@ -53,30 +14,50 @@ class TruthOrDareExtension {
         const sendButton = document.getElementById('send_but');
 
         if (!chatInput || !sendButton) {
-            console.error('Truth or Dare: Could not find chat input or send button.');
+            console.error('Truth or Dare: Could not find chat elements.');
             return;
         }
 
-        const originalValue = chatInput.value;
-
-        // Step 1: Set the new value
-        chatInput.value = `/sys ${message}`;
-
-        // Step 2: Manually dispatch an 'input' event to make the framework aware of the change.
-        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-        // Step 3: Now that the framework's state is updated, click the send button.
-        sendButton.click();
-
-        // Step 4: Restore the original value after a short delay.
-        setTimeout(() => {
-            chatInput.value = originalValue;
-            // Dispatch another input event to ensure the UI is in sync.
+        // This is a method to access the Vue/Svelte instance attached to an element.
+        // It's a bit of a hack, but it's our best shot.
+        const instanceKey = Object.keys(chatInput).find(key => key.startsWith('__vue'));
+        if (!instanceKey) {
+            console.error("Truth or Dare: Could not find the framework's internal instance key. This method won't work.");
+            // Fallback to the previous method just in case.
+            chatInput.value = `/sys ${message}`;
             chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }, 100);
-    }
+            sendButton.click();
+            return;
+        }
+        
+        console.log("Truth or Dare: Found framework instance key:", instanceKey);
 
-    // All other functions are the same as the previous working version
+        // Directly set the value via the framework's own properties.
+        // This is a common pattern for Vue instances.
+        const originalValue = chatInput.value;
+        const vnode = chatInput[instanceKey];
+        
+        // The path to the 'onInput' or 'update:modelValue' function might vary.
+        // We are trying a common pattern.
+        if (vnode && vnode.props && (vnode.props.onUpdate || vnode.props['onUpdate:modelValue'])) {
+            const updateFunction = vnode.props.onUpdate || vnode.props['onUpdate:modelValue'];
+            updateFunction({ target: { value: `/sys ${message}` } });
+
+            // Now click the button
+            sendButton.click();
+
+            // Restore the value after a delay
+            setTimeout(() => {
+                updateFunction({ target: { value: originalValue } });
+            }, 100);
+
+            console.log("Truth or Dare: Sent message via framework's internal update function.");
+        } else {
+            console.error("Truth or Dare: Could not find the framework's update function on the vnode props.");
+        }
+    }
+    
+    // ... (All other functions are the same) ...
     startGame() { this.#isActive = true; this.#playerTurn = 'user'; this.#updateUIForTurn(); document.getElementById('tod-start-btn').style.display = 'none'; document.getElementById('tod-stop-btn').style.display = 'inline-block'; this.#sendSystemMessage('The Truth or Dare game has started!'); }
     stopGame() { this.#isActive = false; document.getElementById('tod-start-btn').style.display = 'inline-block'; document.getElementById('tod-stop-btn').style.display = 'none'; document.getElementById('tod-game-options').style.display = 'none'; document.getElementById('tod-status').textContent = ''; this.#sendSystemMessage('The Truth or Dare game has ended.'); }
     selectTruth() { if (!this.#isActive || this.#playerTurn !== 'user') return; const randomTruth = this.#getRandomItem(this.#truths); if (randomTruth) { this.#sendSystemMessage(`You chose Truth: ${randomTruth}`); this.#endTurn(); } }
