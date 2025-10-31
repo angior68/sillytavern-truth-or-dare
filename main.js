@@ -17,12 +17,12 @@ class TruthOrDareExtension {
     async #loadGameData() {
         try {
             // THIS IS THE CORRECTED PATH
-            const truthsResponse = await fetch('/sillytavern-truth-or-dare/truths.json');
+            const truthsResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/truths.json');
             if (!truthsResponse.ok) { throw new Error(`Failed to load truths.json. Status: ${truthsResponse.status}`); }
             this.#truths = await truthsResponse.json();
 
             // THIS IS THE CORRECTED PATH
-            const daresResponse = await fetch('/sillytavern-truth-or-dare/dares.json');
+            const daresResponse = await fetch('/scripts/extensions/third-party/sillytavern-truth-or-dare/truths.json');
             if (!daresResponse.ok) { throw new Error(`Failed to load dares.json. Status: ${daresResponse.status}`); }
             this.#dares = await daresResponse.json();
             
