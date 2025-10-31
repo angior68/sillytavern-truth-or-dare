@@ -1,4 +1,4 @@
-// SillyTavern Truth or Dare Extension - Final Direct Input Version
+// SillyTavern Truth or Dare Extension - Final Framework-Aware Version
 // File: main.js
 
 class TruthOrDareExtension {
@@ -50,29 +50,30 @@ class TruthOrDareExtension {
     // *** THIS IS THE ONLY FUNCTION THAT HAS CHANGED ***
     #sendSystemMessage(message) {
         const chatInput = document.getElementById('send_textarea');
-        if (!chatInput) {
-            console.error('Truth or Dare: Could not find #send_textarea.');
+        const sendButton = document.getElementById('send_but');
+
+        if (!chatInput || !sendButton) {
+            console.error('Truth or Dare: Could not find chat input or send button.');
             return;
         }
 
         const originalValue = chatInput.value;
+
+        // Step 1: Set the new value
         chatInput.value = `/sys ${message}`;
 
-        // Create a keyboard event to simulate pressing "Enter"
-        // This is the most reliable method for modern web apps.
-        const enterEvent = new KeyboardEvent('keydown', {
-            key: 'Enter',
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true,
-        });
+        // Step 2: Manually dispatch an 'input' event to make the framework aware of the change.
+        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // Dispatch the event directly on the text input element
-        chatInput.dispatchEvent(enterEvent);
+        // Step 3: Now that the framework's state is updated, click the send button.
+        sendButton.click();
 
-        // Restore the original input value shortly after
-        setTimeout(() => { chatInput.value = originalValue; }, 50);
+        // Step 4: Restore the original value after a short delay.
+        setTimeout(() => {
+            chatInput.value = originalValue;
+            // Dispatch another input event to ensure the UI is in sync.
+            chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }, 100);
     }
 
     // All other functions are the same as the previous working version
@@ -80,7 +81,7 @@ class TruthOrDareExtension {
     stopGame() { this.#isActive = false; document.getElementById('tod-start-btn').style.display = 'inline-block'; document.getElementById('tod-stop-btn').style.display = 'none'; document.getElementById('tod-game-options').style.display = 'none'; document.getElementById('tod-status').textContent = ''; this.#sendSystemMessage('The Truth or Dare game has ended.'); }
     selectTruth() { if (!this.#isActive || this.#playerTurn !== 'user') return; const randomTruth = this.#getRandomItem(this.#truths); if (randomTruth) { this.#sendSystemMessage(`You chose Truth: ${randomTruth}`); this.#endTurn(); } }
     selectDare() { if (!this.#isActive || this.#playerTurn !== 'user') return; const randomDare = this.#getRandomItem(this.#dares); if (randomDare) { this.#sendSystemMessage(`You chose Dare: ${randomDare}`); this.#endTurn(); } }
-    #endTurn() { this.#playerTurn = (this.#playerTurn === 'user') ? 'character' : 'user'; this.#updateUIForTurn(); if (this.#playerTurn === 'character') { this.#handleCharacterTurn(); } }
+    #endTurn() { this.#playerTurn = (this.playerTurn === 'user') ? 'character' : 'user'; this.#updateUIForTurn(); if (this.#playerTurn === 'character') { this.#handleCharacterTurn(); } }
     #handleCharacterTurn() { setTimeout(() => { const choice = Math.random() < 0.5 ? 'Truth' : 'Dare'; if (choice === 'Truth') { const randomTruth = this.#getRandomItem(this.#truths); if (randomTruth) { this.#sendSystemMessage(`The character chose Truth.`); setTimeout(() => this.#promptCharacter(`Truth for you: ${randomTruth}`), 1500); } } else { const randomDare = this.#getRandomItem(this.#dares); if (randomDare) { this.#sendSystemMessage(`The character chose Dare.`); setTimeout(() => this.#promptCharacter(`Dare for you: ${randomDare}`), 1500); } } setTimeout(() => this.#endTurn(), 4000); }, 2000); }
     #promptCharacter(prompt) { this.#sendSystemMessage(`*The character is asked:* "${prompt}" *They think for a moment and then respond.*`); }
     #updateUIForTurn() { const gameOptions = document.getElementById('tod-game-options'); const statusDisplay = document.getElementById('tod-status'); if (this.#playerTurn === 'user') { gameOptions.style.display = 'block'; statusDisplay.textContent = "It's your turn. Choose Truth or Dare."; } else { gameOptions.style.display = 'none'; statusDisplay.textContent = "It's the character's turn..."; } }
